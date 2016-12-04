@@ -3,6 +3,7 @@
 // SDL 相关函数
 
 #include "jymain.h"
+#include <math.h>
  
 static Mix_Music *currentMusic=NULL;         //播放音乐数据，由于同时只播放一个，用一个变量
 
@@ -29,6 +30,38 @@ extern int g_FullScreen;
 extern int g_EnableSound;
 extern int g_MusicVolume;
 extern int g_SoundVolume;
+
+static int g_MousePressed;
+static int g_MouseCenterPressed;
+
+static Uint32 g_MousePressTick;
+
+#define MOUSE_ESC_TIMEOUT 1000
+
+enum mouse_pos {
+	mouse_up,
+	mouse_down,
+	mouse_left,
+	mouse_right,
+	mouse_center,
+};
+
+static enum mouse_pos g_PressedMousePos;
+
+static enum mouse_pos calc_mouse_pos (int x, int y)
+{
+	enum mouse_pos mouse_pos = mouse_center;
+	double diagonal = sqrt(g_ScreenW * g_ScreenW + g_ScreenH * g_ScreenH);
+	if (sqrt (x * x + y * y) < diagonal / 4)
+		mouse_pos = mouse_left;
+	if (sqrt ((g_ScreenW - x) * (g_ScreenW - x) + y * y) < diagonal / 4)
+		mouse_pos = mouse_up;
+	if (sqrt (x * x + (g_ScreenH - y) * (g_ScreenH - y)) < diagonal / 4)
+		mouse_pos = mouse_down;
+	if (sqrt ((g_ScreenW - x) * (g_ScreenW - x) + (g_ScreenH - y) * (g_ScreenH - y)) < diagonal / 4)
+		mouse_pos = mouse_right;
+	return mouse_pos;
+}
 
 //过滤ESC、RETURN、SPACE键，使他们按下后不能重复。
 static int KeyFilter(const SDL_Event *event)
@@ -81,7 +114,7 @@ static int KeyFilter(const SDL_Event *event)
 	    case SDLK_RETURN:
 			Return_KeyPress=0;
 			break;
-		default:
+	    default:
             break;
 		}
         break;
@@ -93,6 +126,84 @@ static int KeyFilter(const SDL_Event *event)
 
     default: 
         break;
+    case SDL_MOUSEBUTTONDOWN:
+	if (event->button.button != SDL_BUTTON_LEFT) break;
+	g_MousePressed = 1;
+	{
+		enum mouse_pos mp = calc_mouse_pos(event->button.x, event->button.y);
+		SDL_Event newevent;
+		newevent.type = SDL_KEYDOWN;
+		newevent.key.type = SDL_KEYDOWN;
+		newevent.key.state = SDL_PRESSED;
+		newevent.key.keysym.unicode = 0;
+		newevent.key.keysym.mod = KMOD_NONE;
+		newevent.key.keysym.scancode = 0;
+		switch (mp)
+		{
+			case mouse_up:
+				newevent.key.keysym.sym = SDLK_UP;
+				break;
+			case mouse_down:
+				newevent.key.keysym.sym = SDLK_DOWN;
+				break;
+			case mouse_left:
+				newevent.key.keysym.sym = SDLK_LEFT;
+				break;
+			case mouse_right:
+				newevent.key.keysym.sym = SDLK_RIGHT;
+				break;
+			default:
+				goto setpos;
+		}
+		SDL_PushEvent(&newevent);
+setpos:
+		g_MousePressTick = SDL_GetTicks();
+		g_PressedMousePos = mp;
+	}
+	break;
+    case SDL_MOUSEBUTTONUP:
+	if (g_MousePressed) {
+		SDL_Event newevent;
+		newevent.type = SDL_KEYUP;
+		newevent.key.type = SDL_KEYUP;
+		newevent.key.state = SDL_RELEASED;
+		newevent.key.keysym.unicode = 0;
+		newevent.key.keysym.mod = KMOD_NONE;
+		newevent.key.keysym.scancode = 0;
+		switch (g_PressedMousePos)
+		{
+			case mouse_up:
+				newevent.key.keysym.sym = SDLK_UP;
+				break;
+			case mouse_down:
+				newevent.key.keysym.sym = SDLK_DOWN;
+				break;
+			case mouse_left:
+				newevent.key.keysym.sym = SDLK_LEFT;
+				break;
+			case mouse_right:
+				newevent.key.keysym.sym = SDLK_RIGHT;
+				break;
+			default:
+			newevent.type = SDL_KEYDOWN;
+			newevent.key.type = SDL_KEYDOWN;
+			newevent.key.state = SDL_PRESSED;
+			if (SDL_GetTicks() - g_MousePressTick > MOUSE_ESC_TIMEOUT)
+				newevent.key.keysym.sym = SDLK_ESCAPE;
+			else
+				newevent.key.keysym.sym = SDLK_RETURN;
+			SDL_PushEvent(&newevent);
+			newevent.type = SDL_KEYUP;
+			newevent.key.type = SDL_KEYUP;
+			newevent.key.state = SDL_RELEASED;
+			SDL_PushEvent(&newevent);
+			goto release_pos;
+		}
+		SDL_PushEvent(&newevent);
+	}
+release_pos:
+	g_MousePressed = 0;
+	break;
     }
 
     return r;
@@ -136,6 +247,9 @@ int InitSDL(void)
          WavChunk[i]=NULL;
 
     SDL_SetEventFilter(KeyFilter);
+
+    g_MousePressed = 0;
+    g_MouseCenterPressed = 0;
 
     return 0;
 }
