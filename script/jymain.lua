@@ -242,20 +242,37 @@ function NewGame()     --选择新游戏，设置主角初始属性
 		local x1=(CC.ScreenW-w*4)/2;
         local y1=CC.NewGameY;
         local i=0;
+	local val_color=C_WHITE;
+
+	local function DrawAttribStr(str1,str2)
+            DrawString(x1+i*w,y1,str1,C_RED,fontsize);
+            DrawString(x1+i*w+fontsize*2,y1,str2,val_color,fontsize);
+            i=i+1;
+        end
 
         local function DrawAttrib(str1,str2)    --定义内部函数
-            DrawString(x1+i*w,y1,str1,C_RED,fontsize);
-            DrawString(x1+i*w+fontsize*2,y1,string.format("%3d ",JY.Person[0][str2]),C_WHITE,fontsize);
-            i=i+1;
+	    DrawAttribStr(str1,string.format("%3d ",JY.Person[0][str2]));
         end
 
         DrawString(x1,y1,"这样的属性满意吗(Y/N)?",C_GOLD,fontsize);
         i=0; y1=y1+h;
-		DrawAttrib("内力","内力"); DrawAttrib("攻击","攻击力"); DrawAttrib("轻功","轻功");  DrawAttrib("防御","防御力");
+	if JY.Person[0]["内力性质"] == 0 then
+            val_color = RGB(208,152,208);
+        elseif JY.Person[0]["内力性质"]==1 then
+            val_color = RGB(236,200,40);
+	end
+	DrawAttrib("内力","内力");
+	val_color = C_WHITE;
+	DrawAttrib("攻击","攻击力"); DrawAttrib("轻功","轻功"); 
+	DrawAttrib("防御","防御力"); DrawAttrib("生命","生命");
         i=0; y1=y1+h;
-		DrawAttrib("生命","生命"); DrawAttrib("医疗","医疗能力");DrawAttrib("用毒","用毒能力"); DrawAttrib("解毒","解毒能力");
+	DrawAttrib("医疗","医疗能力"); DrawAttrib("用毒","用毒能力");
+	DrawAttrib("解毒","解毒能力"); DrawAttrib("抗毒","抗毒能力");
+	DrawAttrib("资质","资质");
         i=0; y1=y1+h;
-        DrawAttrib("拳掌","拳掌功夫"); DrawAttrib("御剑","御剑能力");  DrawAttrib("耍刀","耍刀技巧"); DrawAttrib("暗器","暗器技巧");
+        DrawAttrib("拳掌","拳掌功夫"); DrawAttrib("御剑","御剑能力"); 
+	DrawAttrib("耍刀","耍刀技巧"); DrawAttrib("特殊","特殊兵器");
+        DrawAttrib("暗器","暗器技巧");
 
         ShowScreen();
 
