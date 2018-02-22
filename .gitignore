@@ -1,2 +1,4 @@
 jysdllua
 *.o
+error.txt
+debug.txt
