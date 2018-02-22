@@ -203,6 +203,7 @@ function NewGame()     --选择新游戏，设置主角初始属性
     LoadRecord(0); --  载入新游戏数据
     JY.Person[0]["姓名"]=CC.NewPersonName;
 
+    local count = 0
     while true do
         JY.Person[0]["内力性质"]=Rnd(2);
         JY.Person[0]["内力最大值"]=Rnd(20)+21;
@@ -229,6 +230,26 @@ function NewGame()     --选择新游戏，设置主角初始属性
         else
             JY.Person[0]["资质"]=Rnd(20)+75;
         end
+
+	if count >= 100 then
+            JY.Person[0]["内力性质"]=2;
+            JY.Person[0]["内力最大值"]=40;
+            JY.Person[0]["攻击力"]=30;
+            JY.Person[0]["防御力"]=30;
+            JY.Person[0]["轻功"]=30;
+            JY.Person[0]["医疗能力"]=30;
+            JY.Person[0]["用毒能力"]=30;
+            JY.Person[0]["解毒能力"]=30;
+            JY.Person[0]["抗毒能力"]=30;
+            JY.Person[0]["拳掌功夫"]=30;
+            JY.Person[0]["御剑能力"]=30;
+            JY.Person[0]["耍刀技巧"]=30;
+            JY.Person[0]["特殊兵器"]=30;
+            JY.Person[0]["暗器技巧"]=30;
+            JY.Person[0]["生命增长"]=7;
+            JY.Person[0]["生命最大值"]=50;
+            JY.Person[0]["资质"]=100;
+	end
 
         JY.Person[0]["生命"]=JY.Person[0]["生命最大值"];
         JY.Person[0]["内力"]=JY.Person[0]["内力最大值"];
@@ -260,6 +281,8 @@ function NewGame()     --选择新游戏，设置主角初始属性
             val_color = RGB(208,152,208);
         elseif JY.Person[0]["内力性质"]==1 then
             val_color = RGB(236,200,40);
+        elseif JY.Person[0]["内力性质"]==2 then
+            val_color = RGB(234,234,234);
 	end
 	DrawAttrib("内力","内力");
 	val_color = C_WHITE;
@@ -283,6 +306,7 @@ function NewGame()     --选择新游戏，设置主角初始属性
         if ok==1 then
             break;
         end
+	count = count + 1;
     end
 end
 
