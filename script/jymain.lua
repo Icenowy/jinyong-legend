@@ -2443,6 +2443,21 @@ end
 --返回 true可以修炼，false不可
 function CanUseThing(id,personid)           --判断一个人是否可以装备或修炼一个物品
     local str="";
+
+    if JY.Thing[id]["练出武功"]>=0 then
+        local yes=0;
+        for i = 1,10 do
+            if JY.Person[personid]["武功"..i]==JY.Thing[id]["练出武功"] then
+                yes=1;             --武功已经有了
+                break;
+            end
+        end
+
+        if yes == 1 then
+            return true;
+        end
+    end
+
     if JY.Thing[id]["仅修炼人物"] >=0 then
         if JY.Thing[id]["仅修炼人物"] ~= personid then
             return false;
